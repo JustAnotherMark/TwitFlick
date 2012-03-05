@@ -1,0 +1,152 @@
+body{
+	color:white;
+}
+header{
+	text-align:center;
+	margin:0 auto;
+	font-size:150%;
+}
+
+header p{
+	margin:5px;
+	text-shadow: 0px -1px 0px black;
+}
+
+h1{
+	font-size:350%;
+	margin:0 auto;
+	width:400px;
+	text-shadow: 0px -2px 0px black;
+}
+
+p{
+	font-size:130%;
+}
+
+input{
+	text-align:center;
+}
+
+form a{
+	font-size:100%;
+	color:white;
+	border-bottom:1px dashed white;
+	text-decoration:none;
+}
+
+form p{
+	margin:0;
+}
+
+section{
+	z-index:10;
+	display:block;
+	position:absolute;
+	width:250px;
+	text-align:center;
+	background-color:white;
+	border: 2px solid black;
+	padding:10px 50px;
+	margin:5px auto;
+	-moz-box-shadow:15px 15px 5px rgba(0,0,0,0.5);
+	-webkit-box-shadow:15px 15px 5px rgba(0,0,0,0.5);
+	box-shadow:15px 15px 5px rgba(0,0,0,0.5);
+	color:black;
+	text-shadow: none;
+	cursor:pointer;
+}
+
+section.hover{
+	z-index:15;
+	-moz-box-shadow:25px 25px 5px rgba(0,0,0,0.5);
+	-webkit-box-shadow:25px 25px 5px rgba(0,0,0,0.5);
+	box-shadow:25px 25px 5px rgba(0,0,0,0.5);
+}
+
+section p{
+	margin-bottom:0;
+}
+
+h2{
+	margin-bottom:5px;
+}
+
+.post a:visited,
+.post a:link,
+.post a:hover,
+.post a:active{
+	color:#00E;
+}
+.post a:hover{
+	color:#33D;
+}
+.flickrlink{
+	margin:0 auto;
+	font-size:80%;
+	width:90%;
+	text-align:center;
+}
+
+.date{
+	font-size:80%;
+	margin-top:0;
+}
+
+#tweetthis{
+	font-size:100%;
+	text-align:center;
+	margin:10px auto 0 auto;
+	width:75px;
+	padding:2px;
+	border:2px solid rgba(255,255,255,0.6);
+	background-color:rgba(255,255,255,0.1);
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+	border-radius:5px;
+}
+
+a:link,
+a:visited,
+a:hover,
+a:active{
+	text-decoration:none;
+	cursor:pointer;
+}
+
+#tweetthis a{
+	color:white;
+}
+#tweetthis:hover{
+	background-color:rgba(255,255,255,0.2);
+}
+
+#posts{
+	margin-left:100px;
+}
+
+form{
+	width:250px;
+	margin:0 auto;
+}
+
+fieldset{
+	-moz-border-radius:5px;
+	-webkit-border-radius:5px;
+	border-radius:10px;
+}
+
+form ul{
+	list-style-type:none;
+	list-style-position:outside;
+	padding:0;
+}
+
+form li{
+	margin:0 0 15px 0;
+	text-align:center;
+}
+
+form li label{
+	float:left;
+	margin:0 0 0 30px;
+}

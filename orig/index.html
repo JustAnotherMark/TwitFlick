@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>TwitFlick</title>
+		<link rel='stylesheet' type='text/css' href='./s.css' title='Style'/>
+		<script type="text/javascript" src='http://ajax.microsoft.com/ajax/jquery/jquery-1.4.2.min.js'></script>
+		<script type="text/javascript" src='./jquery.jtwitter.min.js'></script>
+		<script type="text/javascript">
+		var flickrapikey = '';
+		var twitterready = false;
+		var twiterror = false;
+		var twitmsg = 'The Twitter username doesn&#39;t exist or Twitter is taking too long to respond. ';
+		var flickridready = false;
+		var flickridreturn = false;
+		var flickrready = false;
+		var twitflickstarted = false;
+		var errormessage = $('<p id="error"></p>');
+		var deg2radians = Math.PI * 2 / 360;
+
+		var colours = ['#B02B2C','#D15600','#C79810','#73880A','#6BBA70','#3F4C6B','#356AA0','#D01F3C'];
+
+		function convertusername(username){
+			var flickridready = false;
+			$.getJSON('http://api.flickr.com/services/rest/?method=flickr.people.findByUsername&username=' 
+				+ username + '&format=json&api_key=' + flickrapikey + '&jsoncallback=?',
+				function(data){
+					flickridreturn = true;
+					if(data.stat == 'fail'){
+						errormessage.append('The Flickr username entered does not exist. ');
+						flickridready = false;
+					}else{
+						flickrid = data.user.id;
+						flickridready = true;
+					}
+				});
+		}
+
+		function getflickrimages(){
+			if(flickrid){
+				$.getJSON("http://api.flickr.com/services/feeds/photos_public.gne?id="
+					 + flickrid + "&lang=en-us&format=json&jsoncallback=?", function(data){
+					clearInterval(flickrinterval);
+					images = data.items;
+					flickrready = true;
+					displaytwitflicks();
+				});
+			}
+		}
+
+		function gettweets(username){
+			$.jTwitter(username, 8, function(data){
+				tweets = data;
+				twitterready = true;
+			});
+		}
+
+		function prependzero(tmp){
+			if(tmp < 10){
+				tmp = '0' + tmp;
+			}
+			return tmp;
+		}
+
+		function displaytwitflicks(){
+			if(twitterready && flickrready && !twitflickstarted){
+				twitflickstarted = true;
+				clearInterval(twitflickinterval);
+				$('#posts').empty();
+				$.each(tweets, function(i, post){
+					post.created_at = post.created_at.replace("+0000 ", "");
+					var formatteddate = new Date(post.created_at);
+					var hours = (formatteddate.getHours());
+					hours = prependzero(hours);
+					var minutes = (formatteddate.getMinutes());
+					minutes = prependzero(minutes);
+					var seconds = (formatteddate.getSeconds());
+					seconds = prependzero(seconds);
+					var date = (formatteddate.getDate());
+					date = prependzero(date);
+					var month = (formatteddate.getMonth()+1);
+					month = prependzero(month);
+					formatteddate = 'Tweeted at ' + hours + ':' + minutes + ':' + seconds + ' on ' + date + '/' + month + '/' + (formatteddate.getFullYear());
+					$('#posts').append(
+						'<section class="post" id="tweet' + (i+1) + '">'
+						+'<h2><a href="http://twitter.com/' + twitname + '">' + twitname + '</a></h2>'
+						+ '<p class="date">' + formatteddate + '</p>'
+						+ '<p class="txt">'
+						+ replaceURLWithHTMLLinks(post.text)
+						+ '</p></section>'
+					);
+				});
+				var rotateby;
+				$('section.post').each(function(i){
+					rotateby = getrotate();
+					iearray = IErotate(rotateby);
+					$(this).css({
+						'top':getheight(),
+						'left':gethorizontal(),
+						"-moz-transform":"rotate(" + rotateby + "deg)",
+						"-webkit-transform":"rotate(" + rotateby + "deg)",
+							"filter":"progid:DXImageTransform.Microsoft.Matrix(M11=" + iearray[0] + ", M12=" + iearray[1] + ", M21=" + iearray[2] + ", M22=" + iearray[3] + ", sizingMethod='auto expand')"
+					})
+					.prepend('<p class="flickrlink"><a href="' + images[i].link + '">' + images[i].link + '</a></p>')
+					.prepend('<img src="' + images[i].media.m + '" />');
+				})
+				.toggle(
+					function(){
+						$(this).addClass('hover')
+						.css({
+							"-moz-transform":"rotate(0deg)",
+							"-webkit-transform":"rotate(0deg)",
+							"filter":"progid:DXImageTransform.Microsoft.BasicImage(rotation=0)"
+						})
+						.animate({
+							width:300,
+							borderWidth:4
+						});
+					},function(){
+						$(this).removeClass('hover')
+						.css({
+							"-moz-transform":"rotate(" + getrotate() + "deg)",
+							"-webkit-transform":"rotate(" + getrotate() + "deg)",
+							"filter":"progid:DXImageTransform.Microsoft.Matrix(M11=0.9914448613738104, M12=-0.13052619222005157, M21=0.13052619222005157, M22=0.9914448613738104, sizingMethod='auto expand')"
+						})
+						.animate({
+							top:getheight(),
+							width:250,
+							borderWidth:2,
+							left:gethorizontal()
+						}, 1000);
+					}
+				);
+				$('.post a').click(
+					function(){
+						window.location = $(this).attr('href');
+					}
+				);
+			}else if(flickridreturn && !flickrready && !twitflickstarted){
+				clearInterval(twitflickinterval);
+				if(!twitterready){
+					errormessage.append(twitmsg);
+				}
+				$('#posts').html(errormessage);
+			}else if(flickridreturn && flickrready && !twitflickstarted){
+				if(!twiterror){
+					twiterror = true;
+					errormessage.append(twitmsg);
+					$('#posts').html(errormessage);
+				}
+			}
+		}
+
+		function querySt(ji) {
+			hu = window.location.search.substring(1);
+			gy = hu.split("&");
+			for (i=0;i<gy.length;i++) {
+				ft = gy[i].split("=");
+				if (ft[0] == ji) {
+					return ft[1];
+				}
+			}
+		}
+
+		function getrotate(){
+			return Math.floor(Math.random()*60-30);
+		}
+		function getheight(){
+			return Math.floor(Math.random()*200+270);
+		}
+		function gethorizontal(){
+			return Math.floor(Math.random()*1024);
+		}
+
+		function bgcolour(index){
+			if(index == '8'){
+				index = Math.floor(Math.random() * 8);
+			}
+			$('body').css('backgroundColor',colours[index]);
+			$("select option[selected]").removeAttr("selected");
+			$("select option[value='" + index + "']").attr("selected", "selected");
+		}
+		function getqsattr(attr, defaultval){
+			temp = querySt(attr);
+			if(typeof(temp) == 'undefined' || temp == '' ){
+				temp = defaultval;
+			}
+			return temp;
+		}
+
+		function tweetthislink(){
+			var url = 'http://' + window.location.hostname + '/index.html?twitname=' + twitname + '&flickrname=' + flickrname + '&colour=' + bgcolour;
+			$('form').after('<p id="tweetthis"><a href="http://twitter.com/home?status=Just made this on TwitFlick: ' + escape(url) + '">Tweet This TwitFlick</a></p>');
+		}
+
+		function replaceURLWithHTMLLinks(text) {
+			var exp = /(\b(https?|ftp|file):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/ig;
+			return text.replace(exp,"<a href='$1'>$1</a>"); 
+		}
+
+		function IErotate(deg){
+		    rad = deg * deg2radians;
+		    costheta = Math.cos(rad);
+		    sintheta = Math.sin(rad);
+			var iearray = [costheta, -sintheta, sintheta, costheta];
+		    return iearray;
+		}
+		
+		$(document).ready(function(){
+			bg = getqsattr('colour', '8');
+			bgcolour(bg);
+			twitname = getqsattr('twitname', 'JustAnotherMark');
+			flickrname = getqsattr('flickrname', 'Just.Mark');
+			$('input#twitname').attr("value",twitname);
+			$('input#flickrname').attr("value",flickrname);
+			tweetthislink();
+
+			convertusername(flickrname);
+			gettweets(twitname);
+			flickrinterval = setInterval("getflickrimages()", 500);
+			twitflickinterval = setInterval("displaytwitflicks()", 3000);
+
+			$('#formcontents').hide();
+			$('#formcontrols p a').toggle(
+				function(){
+					$('#formcontents').show(500);
+					$(this).html('Hide Form');
+					$('section.post').each(
+						function(){
+							var currenttop = $(this).css('top');
+							currenttop = currenttop.substring(0,currenttop.length-2);
+							if( currenttop < 450){
+								$(this).animate({'top':525});
+							}
+						}
+					);
+				},
+				function(){
+					$('#formcontents').hide(500);
+					$(this).html('Show Form');
+					$('section.post').each(
+						function(){
+							var currenttop = $(this).css('top');
+							currenttop = currenttop.substring(0,currenttop.length-2);
+							$(this).animate({'top':currenttop-200});
+						}
+					);
+				}
+			);
+		});
+	</script>
+
+	</head>
+	<body>
+		<header>
+			<h1>TwitFlick!</h1>
+			<p>A Twitter and Flickr Mashup</p>
+		</header>
+		<form method='get'>
+			<fieldset>
+				<legend>Your details</legend>
+				<div id='formcontrols'>
+					<p><a href='#'>Show Form</a></p>
+				</div>
+				<div id='formcontents'>
+					<ul>
+						<li>
+							<label for='twitname'>Twitter Account</label>
+							<input id='twitname' name='twitname' type='text' placeholder="e.g. JustAnotherMark" />
+						</li>
+						<li>
+							<label for='flickrname'>Flickr Account</label>
+							<input id='flickrname' name='flickrname' type='text' placeholder="e.g. Just.Mark" />
+						</li>
+						<li>
+							<label for='colour'>Background Colour</label>
+							<select name="colour" id="colour">
+								<option value="0" label="Red" title="Red" >Red</option>
+								<option value="1" label="Orange" >Orange</option>
+								<option value="2" label="Gold" >Gold</option>
+								<option value="3" label="Olive" >Olive</option>
+								<option value="4" label="Green" >Green</option>
+								<option value="5" label="Dark Blue" >Dark Blue</option>
+								<option value="6" label="Light Blue" >Light Blue</option>
+								<option value="7" label="Crimson" >Crimson</option>
+								<option value="8" label="Random" >Random</option>
+							</select>
+						</li>
+						<li id='submitparent'>
+							<input id='submit' name='submit' type='submit' value="Reload" required />
+						</li>
+					</ul>
+				</div>
+			</fieldset>
+		</form>
+		<div id='posts'>
+			<p>Loading&hellip;</p>
+		</div>
+	</body>
+</html>
